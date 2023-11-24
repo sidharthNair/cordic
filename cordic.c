@@ -6,6 +6,7 @@
 #include <time.h>
 
 #define TESTS 10000
+#define PRINT_CORDIC_SETUP 1
 #define DEBUG 0
 #define TAYLOR_TERMS 4
 #define CORDIC_TERMS 15
@@ -73,6 +74,14 @@ int cordic(int theta, int gain, int *angles, int n, int *cos, int *sin)
 
 int main(void)
 {
+
+#if (PRINT_CORDIC_SETUP || DEBUG)
+    printf("Note: floats are converted to SFXP2_30\n");
+    printf("Number of CORDIC Terms: %d\n", CORDIC_TERMS);
+    printf("Angles Table (atan(2^(-i))):\n");
+    printf("%-5s%-15s%-15s%-15s\n", "i", "angle (deg)", "angle (rad)", "angle (hex)");
+#endif
+
     float gain = 1.0;
     int *angles = malloc(sizeof(int) * CORDIC_TERMS);
     for (int i = 0; i < CORDIC_TERMS; i++)
@@ -80,8 +89,15 @@ int main(void)
         float phi = atanf(pow(2, -1 * i));
         gain *= cosf(phi);
         angles[i] = FLOAT2FIXED(phi);
+#if (PRINT_CORDIC_SETUP || DEBUG)
+        printf("%-5d%-15f%-15f32'h%08x\n", i, RAD_TO_DEG(phi), phi, angles[i]);
+#endif
     }
     int fixed_gain = FLOAT2FIXED(gain);
+
+#if (PRINT_CORDIC_SETUP || DEBUG)
+    printf("CORDIC Gain: %f, 32'h%08x\n\n", gain, fixed_gain);
+#endif
 
     srand(time(NULL));
     struct timespec start, end;
