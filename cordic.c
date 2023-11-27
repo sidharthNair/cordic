@@ -111,30 +111,32 @@ int main(void)
     {
         int deg = rand() % 180 - 90;
         float rad = DEG_TO_RAD(deg);
+        int rad_fixed = FLOAT2FIXED(rad);
 
         clock_gettime(CLOCK_MONOTONIC, &start);
-        cos_taylor = taylor_cos(DEG_TO_RAD(60), TAYLOR_TERMS);
-        sin_taylor = taylor_sin(DEG_TO_RAD(60), TAYLOR_TERMS);
+        cos_taylor = taylor_cos(rad, TAYLOR_TERMS);
+        sin_taylor = taylor_sin(rad, TAYLOR_TERMS);
         clock_gettime(CLOCK_MONOTONIC, &end);
         taylor_time[i] = (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec);
 
         clock_gettime(CLOCK_MONOTONIC, &start);
-        cordic(FLOAT2FIXED(DEG_TO_RAD(60)), fixed_gain, angles, CORDIC_TERMS, &cos_cordic, &sin_cordic);
+        cordic(rad_fixed, fixed_gain, angles, CORDIC_TERMS, &cos_cordic, &sin_cordic);
         clock_gettime(CLOCK_MONOTONIC, &end);
         cordic_time[i] = (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec);
 
-        cos = cosf(DEG_TO_RAD(60));
-        sin = sinf(DEG_TO_RAD(60));
+        cos = cosf(rad);
+        sin = sinf(rad);
         taylor_error[i] = (fabs(cos_taylor - cos)) + fabs((sin_taylor - sin)) / 2;
         cordic_error[i] = (fabs(FIXED2DOUBLE(cos_cordic) - cos) + fabs(FIXED2DOUBLE(sin_cordic) - sin)) / 2;
 
 #if (DEBUG)
         printf("===================== TEST %d =====================\n", i);
+        printf("Angle: %d deg, %f rad, 32'h%08x\n", deg, rad, rad_fixed);
         printf("Taylor execution time: %ld ns\n", taylor_time[i]);
         printf("CORDIC execution time: %ld ns\n", cordic_time[i]);
         printf("math.h cos(%d): %f, sin(%d) %f\n", deg, cos, deg, sin);
         printf("Taylor cos(%d): %f, sin(%d): %f\n", deg, cos_taylor, deg, sin_taylor);
-        printf("CORDIC cos(%d): %f, sin(%d): %f\n\n", deg, FIXED2DOUBLE(cos_cordic), deg, FIXED2DOUBLE(sin_cordic));
+        printf("CORDIC cos(%d): %f (32'h%08x), sin(%d): %f (32'h%08x)\n\n", deg, FIXED2DOUBLE(cos_cordic), cos_cordic, deg, FIXED2DOUBLE(sin_cordic), sin_cordic);
 #endif
     }
 
