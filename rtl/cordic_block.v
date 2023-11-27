@@ -1,4 +1,3 @@
-
 module cordic_block(
     input wire signed [31:0] x_in,
     input wire signed [31:0] y_in,
