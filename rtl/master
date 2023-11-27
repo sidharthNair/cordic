@@ -1,0 +1,6 @@
+// vcs -full64 -f master -debug
+// ./simv -gui &
+
+cordic_tb.v
+cordic.v
+cordic_block.v
