@@ -6,7 +6,7 @@
 #include <time.h>
 
 #define TESTS 10000
-#define PRINT_CORDIC_SETUP 1
+#define PRINT_CORDIC_SETUP 0
 #define DEBUG 0
 #define TAYLOR_TERMS 4
 #define CORDIC_TERMS 15
@@ -72,19 +72,24 @@ int cordic(int theta, int gain, int *angles, int n, int *cos, int *sin)
     *sin = y;
 }
 
-int main(void)
+int main(int argc, char *argv[])
 {
+    int taylor_terms = TAYLOR_TERMS;
+    int cordic_terms = CORDIC_TERMS;
+    if (argc >= 2) taylor_terms = atoi(argv[1]);
+    if (argc >= 3) cordic_terms = atoi(argv[2]);
+
 
 #if (PRINT_CORDIC_SETUP || DEBUG)
     printf("Note: floats are converted to SFXP2_30\n");
-    printf("Number of CORDIC Terms: %d\n", CORDIC_TERMS);
+    printf("Number of CORDIC Terms: %d\n", cordic_terms);
     printf("Angles Table (atan(2^(-i))):\n");
     printf("%-5s%-15s%-15s%-15s\n", "i", "angle (deg)", "angle (rad)", "angle (hex)");
 #endif
 
     float gain = 1.0;
-    int *angles = malloc(sizeof(int) * CORDIC_TERMS);
-    for (int i = 0; i < CORDIC_TERMS; i++)
+    int *angles = malloc(sizeof(int) * cordic_terms);
+    for (int i = 0; i < cordic_terms; i++)
     {
         float phi = atanf(pow(2, -1 * i));
         gain *= cosf(phi);
@@ -114,13 +119,13 @@ int main(void)
         int rad_fixed = FLOAT2FIXED(rad);
 
         clock_gettime(CLOCK_MONOTONIC, &start);
-        cos_taylor = taylor_cos(rad, TAYLOR_TERMS);
-        sin_taylor = taylor_sin(rad, TAYLOR_TERMS);
+        cos_taylor = taylor_cos(rad, taylor_terms);
+        sin_taylor = taylor_sin(rad, taylor_terms);
         clock_gettime(CLOCK_MONOTONIC, &end);
         taylor_time[i] = (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec);
 
         clock_gettime(CLOCK_MONOTONIC, &start);
-        cordic(rad_fixed, fixed_gain, angles, CORDIC_TERMS, &cos_cordic, &sin_cordic);
+        cordic(rad_fixed, fixed_gain, angles, cordic_terms, &cos_cordic, &sin_cordic);
         clock_gettime(CLOCK_MONOTONIC, &end);
         cordic_time[i] = (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec);
 
@@ -150,7 +155,7 @@ int main(void)
         cordic_total_error += cordic_error[i];
     }
 
-    printf("Tests: %d, Taylor Terms: %d, CORDIC Terms: %d\n", TESTS, TAYLOR_TERMS, CORDIC_TERMS);
+    printf("Tests: %d, Taylor Terms: %d, CORDIC Terms: %d\n", TESTS, taylor_terms, cordic_terms);
     printf("Taylor average execution time: %ld ns\n", taylor_total_time / TESTS);
     printf("Taylor average error: %f\n", taylor_total_error / TESTS);
     printf("CORDIC average execution time: %ld ns\n", cordic_total_time / TESTS);
