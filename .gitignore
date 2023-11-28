@@ -2,6 +2,6 @@ cordic
 
 rtl/*
 !rtl/*.v
-!rtl/gen_rtl.py
+!rtl/*.py
 !rtl/template
 !rtl/master
