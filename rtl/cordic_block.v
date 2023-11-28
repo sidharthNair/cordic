@@ -16,4 +16,4 @@ assign x_out = theta_neg ? x_in + (y_in >> i) : x_in - (y_in >> i);
 assign y_out = theta_neg ? y_in - (x_in >> i) : y_in + (x_in >> i);
 assign theta_out = theta_neg ? theta_in + atan : theta_in - atan;
 
-endmodule;
+endmodule
