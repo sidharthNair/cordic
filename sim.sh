@@ -1,3 +1,3 @@
 #!/bin/bash
-gcc -o cordic -lm -std=c99 cordic.c
+gcc -o cordic -std=c99 cordic.c -lm
 ./cordic
