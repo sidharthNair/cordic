@@ -116,7 +116,7 @@ module cos_taylor (
 		.input_a(x_fourth_out),
         .input_b(fourth_term_partial_out),
         .input_a_stb(x_fourth_out_stb),
-        .input_b_stb(fourth_term_out_stb),
+        .input_b_stb(fourth_term_partial_out_stb),
         .output_z_ack(rad != prev_rad),
         .clk(clk),
         .rst(rst),
@@ -157,7 +157,7 @@ module cos_taylor (
 
     // result
     // add halves
-    fp_adder_2x32 outer_half(
+    fp_adder_2x32 overall(
         .input_a(inner_half_out),
         .input_b(outer_half_out),
         .input_a_stb(inner_half_out_stb),

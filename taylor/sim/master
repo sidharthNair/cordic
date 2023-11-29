@@ -1,0 +1,29 @@
+// commandline options and file lists
+// Yipeng Wang
+// 10/18/22
+// ----------------------------------
+
+// Acceleration options, check doc before using
+// -caxl
+// +speedup
+
+
+// overwrite timescale (comment out if you do not want)
+-timescale=1n/10p
+
+// SystemVerilog flag, if you are using Systemverilog
+// Note that SystemVerilog is back compatable with Verilog
+// -sverilog
+
+
+// -y with folder, which contains source files
+// -y models2
+
+// -v with Verilog or SystemVerilog files
+-v
+lib1
+// List your files here -------------
+tb_cos_taylor.v
+../rtl/cos_taylor.v
+../rtl/fp_adder_2x32.v
+../rtl/fp_mult_2x32.v
