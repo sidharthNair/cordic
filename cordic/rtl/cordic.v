@@ -114,3 +114,83 @@ module cordic_comb(
     cordic_block c14(.x_in(x[14]), .y_in(y[14]), .theta_in(t[14]), .atan(atan[14]), .i(5'b01110), .x_out(cos_out), .y_out(sin_out), .theta_out(t[15]));
 
 endmodule
+
+module cordic_hybrid(
+    input wire clk,
+    input wire rst,
+    input wire signed [31:0] theta,
+    output wire signed [31:0] cos_out,
+    output wire signed [31:0] sin_out,
+    output wire done
+);
+    `define TERMS 15
+
+    wire signed [31:0] atan [0:`TERMS-1];
+    assign atan[0]  = 32'h3243f6c0;
+    assign atan[1]  = 32'h1dac6700;
+    assign atan[2]  = 32'h0fadbb00;
+    assign atan[3]  = 32'h07f56ea8;
+    assign atan[4]  = 32'h03feab78;
+    assign atan[5]  = 32'h01ffd55c;
+    assign atan[6]  = 32'h00fffaab;
+    assign atan[7]  = 32'h007fff55;
+    assign atan[8]  = 32'h003fffea;
+    assign atan[9]  = 32'h001ffffd;
+    assign atan[10] = 32'h000fffff;
+    assign atan[11] = 32'h0007ffff;
+    assign atan[12] = 32'h00040000;
+    assign atan[13] = 32'h00020000;
+    assign atan[14] = 32'h00010000;
+
+    wire signed [31:0] gain;
+    assign gain = 32'h26dd3b80;
+
+    reg [31:0] x_curr, y_curr, theta_curr, atan_curr, atan_int;
+    reg [4:0] i1, i2;
+
+    wire [31:0] x_int, y_int, theta_int;
+    wire [31:0] x_new, y_new, theta_new;
+
+    cordic_block c1(.x_in(x_curr),
+                    .y_in(y_curr),
+                    .theta_in(theta_curr),
+                    .atan(atan_curr),
+                    .i(i1),
+                    .x_out(x_int),
+                    .y_out(y_int),
+                    .theta_out(theta_int));
+    cordic_block c2(.x_in(x_int),
+                    .y_in(y_int),
+                    .theta_in(theta_int),
+                    .atan(atan_int),
+                    .i(i2),
+                    .x_out(x_new),
+                    .y_out(y_new),
+                    .theta_out(theta_new));
+
+    assign done = (i1 == (`TERMS - 1));
+
+    always @(posedge clk or posedge rst) begin
+    if (rst) begin
+        x_curr <= gain;
+        y_curr <= 32'b0;
+        theta_curr <= theta;
+        atan_curr <= atan[0];
+        atan_int <= atan[1];
+        i1 <= 5'b00000;
+        i2 <= 5'b00001;
+    end else if (!done) begin
+        x_curr <= x_new;
+        y_curr <= y_new;
+        theta_curr <= theta_new;
+        atan_curr <= atan[i1 + 2];
+        atan_int <= atan[i2 + 2];
+        i1 <= i1 + 2;
+        i2 <= i2 + 2;
+    end
+end
+
+assign cos_out = done ? x_int : 32'bz;
+assign sin_out = done ? y_int : 32'bz;
+
+endmodule
